@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIDGE | Erasmus+ Project Monitoring Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --eu-blue: #003399;
+    --eu-gold: #FFCC00;
+    --deep-navy: #0a1628;
+    --mid-navy: #122248;
+    --panel: #0d1e3a;
+    --panel-light: #152a4a;
+    --border: rgba(255,204,0,0.15);
+    --text: #e8edf5;
+    --muted: #7a90b0;
+    --green: #2ecc71;
+    --amber: #f39c12;
+    --red: #e74c3c;
+    --teal: #1abc9c;
+    --wp1: #4a90d9;
+    --wp2: #9b59b6;
+    --wp3: #27ae60;
+    --wp4: #e67e22;
+    --wp5: #e91e8c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--deep-navy);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #001166 0%, #002288 50%, #001a66 100%);
+    border-bottom: 2px solid var(--eu-gold);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 28px;
+    gap: 20px;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .eu-stars {
+    width: 44px; height: 44px;
+    background: var(--eu-blue);
+    border: 2px solid var(--eu-gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .header-title h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+  }
+
+  .header-title h1 span { color: var(--eu-gold); }
+
+  .header-title p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .header-stat {
+    text-align: center;
+  }
+
+  .header-stat .val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--eu-gold);
+    line-height: 1;
+  }
+
+  .header-stat .lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .stat-divider {
+    width: 1px; height: 36px;
+    background: rgba(255,255,255,0.15);
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(46,204,113,0.15);
+    border: 1px solid rgba(46,204,113,0.4);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.5px;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--deep-navy);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--eu-gold); border-bottom-color: var(--eu-gold); }
+
+  /* MAIN LAYOUT */
+  .main { padding: 20px 28px; max-width: 1600px; margin: 0 auto; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* KPI ROW */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card.blue::before { background: var(--wp1); }
+  .kpi-card.purple::before { background: var(--wp2); }
+  .kpi-card.green::before { background: var(--wp3); }
+  .kpi-card.orange::before { background: var(--wp4); }
+  .kpi-card.pink::before { background: var(--wp5); }
+  .kpi-card.gold::before { background: var(--eu-gold); }
+
+  .kpi-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .kpi-trend {
+    font-size: 11px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kpi-trend.up { color: var(--green); }
+  .kpi-trend.warn { color: var(--amber); }
+  .kpi-trend.danger { color: var(--red); }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-12 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 16px; }
+  .grid-21 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  /* PANEL */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.3px;
+  }
+
+  .panel-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(255,204,0,0.12);
+    color: var(--eu-gold);
+    font-weight: 500;
+  }
+
+  .panel-body { padding: 16px 18px; }
+
+  /* PROGRESS BAR */
+  .progress-item {
+    margin-bottom: 14px;
+  }
+
+  .progress-item:last-child { margin-bottom: 0; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .progress-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .progress-pct {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--eu-gold);
+  }
+
+  .progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  /* MILESTONE TABLE */
+  .ms-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .ms-table th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    font-weight: 500;
+  }
+
+  .ms-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+
+  .ms-table tr:last-child td { border-bottom: none; }
+  .ms-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* STATUS BADGE */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  .badge.complete { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+  .badge.progress { background: rgba(52,152,219,0.15); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+  .badge.pending { background: rgba(122,144,176,0.15); color: #7a90b0; border: 1px solid rgba(122,144,176,0.3); }
+  .badge.overdue { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+  .badge.warning { background: rgba(243,156,18,0.15); color: #f39c12; border: 1px solid rgba(243,156,18,0.3); }
+
+  .badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* WP TAG */
+  .wp-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .wp1 { background: rgba(74,144,217,0.2); color: var(--wp1); }
+  .wp2 { background: rgba(155,89,182,0.2); color: var(--wp2); }
+  .wp3 { background: rgba(39,174,96,0.2); color: var(--wp3); }
+  .wp4 { background: rgba(230,126,34,0.2); color: var(--wp4); }
+  .wp5 { background: rgba(233,30,140,0.2); color: var(--wp5); }
+
+  /* GANTT */
+  .gantt-wrap {
+    overflow-x: auto;
+  }
+
+  .gantt {
+    min-width: 900px;
+  }
+
+  .gantt-header {
+    display: grid;
+    grid-template-columns: 220px repeat(36, 1fr);
+    margin-bottom: 4px;
+  }
+
+  .gantt-label-col { 
+    font-size: 10px; color: var(--muted); padding: 4px 8px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .gantt-month {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    padding: 4px 2px;
+  }
+
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 220px repeat(36, 1fr);
+    margin-bottom: 3px;
+    align-items: center;
+  }
+
+  .gantt-row-label {
+    font-size: 11px;
+    color: var(--text);
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gantt-cell {
+    height: 20px;
+    position: relative;
+  }
+
+  .gantt-bar {
+    height: 16px;
+    border-radius: 3px;
+    position: absolute;
+    top: 2px;
+    opacity: 0.85;
+  }
+
+  .gantt-today-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(255,204,0,0.6);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* PARTNER TABLE */
+  .partner-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .partner-card {
+    background: var(--panel-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .partner-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .partner-type {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  .partner-budget {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--eu-gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .partner-budget-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .partner-wps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* ALERT PANEL */
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .alert-item:last-child { margin-bottom: 0; }
+
+  .alert-item.danger { background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.25); }
+  .alert-item.warning { background: rgba(243,156,18,0.1); border: 1px solid rgba(243,156,18,0.25); }
+  .alert-item.info { background: rgba(52,152,219,0.1); border: 1px solid rgba(52,152,219,0.25); }
+  .alert-item.success { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.25); }
+
+  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-weight: 600; margin-bottom: 2px; }
+  .alert-desc { color: var(--muted); line-height: 1.4; }
+
+  .alert-item.danger .alert-title { color: #e74c3c; }
+  .alert-item.warning .alert-title { color: #f39c12; }
+  .alert-item.info .alert-title { color: #3498db; }
+  .alert-item.success .alert-title { color: #2ecc71; }
+
+  /* EMAIL MODAL */
+  .email-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .email-modal.open { display: flex; }
+
+  .email-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    width: 520px;
+    max-width: 95vw;
+  }
+
+  .email-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .email-field {
+    margin-bottom: 12px;
+  }
+
+  .email-field label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .email-field input, .email-field textarea, .email-field select {
+    width: 100%;
+    background: var(--deep-navy);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .email-field textarea { height: 100px; resize: vertical; }
+
+  .email-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary { background: var(--eu-blue); color: #fff; }
+  .btn-primary:hover { background: #0044cc; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-gold { background: var(--eu-gold); color: var(--deep-navy); }
+  .btn-gold:hover { background: #ffd700; }
+
+  /* CHART CONTAINERS */
+  .chart-container { position: relative; }
+
+  /* STATUS SUMMARY ROW */
+  .status-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .status-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .status-chip.active-filter { box-shadow: 0 0 0 1px currentColor; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 30px;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1200px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .partner-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-12, .grid-21 { grid-template-columns: 1fr; }
+    .header-meta { display: none; }
+    .partner-grid { grid-template-columns: 1fr; }
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .month-badge {
+    background: rgba(0,51,153,0.3);
+    border: 1px solid rgba(0,51,153,0.5);
+    color: #7ab3ff;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .deliverable-row td:first-child { 
+    font-weight: 600;
+    color: var(--eu-gold);
+    font-size: 11px;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--deep-navy);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+  }
+
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    flex: 1;
+  }
+
+  .search-bar span { color: var(--muted); }
+
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .filter-btn {
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover, .filter-btn.active { background: var(--panel-light); color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="eu-stars">🇪🇺</div>
+      <div class="header-title">
+        <h1><span>BRIDGE</span> Project Monitoring Dashboard</h1>
+        <p>Erasmus+ CBHE · Grant No. 101237977 · M1–M36 (2025–2028)</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="header-stat">
+        <div class="val">€799K</div>
+        <div class="lbl">Total Budget</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="header-stat">
+        <div class="val" id="elapsed-months">—</div>
+        <div class="lbl">Month / 36</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="header-stat">
+        <div class="val" id="overall-progress-val">--%</div>
+        <div class="lbl">Overall Progress</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        LIVE · <span id="current-date"></span>
+      </div>
+      <button class="btn btn-gold" onclick="document.getElementById('emailModal').classList.add('open')" style="margin-left:8px;">✉ Send Alert</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('overview', this)">Overview</div>
+  <div class="nav-tab" onclick="switchTab('milestones', this)">Milestones</div>
+  <div class="nav-tab" onclick="switchTab('deliverables', this)">Deliverables</div>
+  <div class="nav-tab" onclick="switchTab('gantt', this)">Gantt Chart</div>
+  <div class="nav-tab" onclick="switchTab('partners', this)">Partners & Budget</div>
+  <div class="nav-tab" onclick="switchTab('alerts', this)">Alerts & Actions</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ═══════════ OVERVIEW ═══════════ -->
+<div id="section-overview" class="section active">
+  <div class="kpi-row">
+    <div class="kpi-card blue">
+      <div class="kpi-label">WP1 Management</div>
+      <div class="kpi-value">--%</div>
+      <div class="kpi-sub">M1–M36 · Lead: UETL</div>
+      <div class="kpi-trend up">▲ On Track</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">WP2 Bootcamps</div>
+      <div class="kpi-value">--%</div>
+      <div class="kpi-sub">M1–M30 · Lead: DCU</div>
+      <div class="kpi-trend up">▲ On Track</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">WP3 Curricula</div>
+      <div class="kpi-value">Not Started</div>
+      <div class="kpi-sub">M6–M30 · Lead: PAF-IAST</div>
+      <div class="kpi-trend warn">● Pending</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">WP4 CoE / Labs</div>
+      <div class="kpi-value">--%</div>
+      <div class="kpi-sub">M6–M36 · Lead: UETL</div>
+      <div class="kpi-trend warn">● Early Stage</div>
+    </div>
+    <div class="kpi-card pink">
+      <div class="kpi-label">WP5 Dissemination</div>
+      <div class="kpi-value">--%</div>
+      <div class="kpi-sub">M1–M36 · Lead: LCWU</div>
+      <div class="kpi-trend up">▲ Early Stage</div>
+    </div>
+    <div class="kpi-card gold">
+      <div class="kpi-label">Milestones Met</div>
+      <div class="kpi-value">2<span style="font-size:16px;color:var(--muted)">/17</span></div>
+      <div class="kpi-sub">2 complete, 2 in progress</div>
+      <div class="kpi-trend up">▲ On Schedule</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Deliverables acheived</div>
+      <div class="kpi-value">2 Due Soon, 3 Upcoming </div>
+      <div class="kpi-sub">5 Pending</div>
+      <div class="kpi-trend up">▲ On Schedule</div>
+    </div>	
+  </div>
+
+  <div class="grid-21">
+    <!-- WP Progress -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Work Package Progress Overview</div>
+        <div class="panel-badge">Auto-Calculated</div>
+      </div>
+      <div class="panel-body">
+        <div class="progress-item">
+          <div class="progress-header">
+            <div class="progress-label"><span class="wp-tag wp1">WP1</span> Project Management & Quality Assurance</div>
+            <div class="progress-meta">
+              <span class="badge complete"><span class="badge-dot"></span>On Track</span>
+              <span class="progress-pct">4%</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:4%;background:var(--wp1)"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <div class="progress-label"><span class="wp-tag wp2">WP2</span> BRIDGE Bootcamps for Industry 5.0</div>
+            <div class="progress-meta">
+              <span class="badge progress"><span class="badge-dot"></span>In Progress</span>
+              <span class="progress-pct">8%</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:8%;background:var(--wp2)"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <div class="progress-label"><span class="wp-tag wp3">WP3</span> Industry-Driven Curriculum Updates</div>
+            <div class="progress-meta">
+              <span class="badge pending"><span class="badge-dot"></span>Pending</span>
+              <span class="progress-pct">0%</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:0%;background:var(--wp3)"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <div class="progress-label"><span class="wp-tag wp4">WP4</span> Centre of Excellence for Industry 5.0</div>
+            <div class="progress-meta">
+              <span class="badge pending"><span class="badge-dot"></span>Early Stage</span>
+              <span class="progress-pct">1%</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:1%;background:var(--wp4)"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <div class="progress-label"><span class="wp-tag wp5">WP5</span> Dissemination, Communication & Exploitation</div>
+            <div class="progress-meta">
+              <span class="badge progress"><span class="badge-dot"></span>Early Stage</span>
+              <span class="progress-pct">1%</span>
+            </div>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:1%;background:var(--wp5)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deliverable Status Donut -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Deliverable Status</div>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <div class="chart-container" style="width:200px;height:200px;">
+          <canvas id="delivStatusChart"></canvas>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span style="font-size:11px;color:var(--green);">● Complete (2)</span>
+          <span style="font-size:11px;color:#3498db;">● In Progress (3)</span>
+          <span style="font-size:11px;color:var(--muted);">● Pending (10)</span>
+          <span style="font-size:11px;color:var(--amber);">● Due Soon (2)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <!-- Timeline progress -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Project Timeline</div>
+        <div class="panel-badge" id="timeline-badge">Month 3 / 36</div>
+      </div>
+      <div class="panel-body">
+        <canvas id="timelineChart" height="180"></canvas>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Project Start: Dec 2025 · End: Nov 2028</div>
+      </div>
+    </div>
+
+    <!-- Milestone status -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Milestone Status by WP</div>
+      </div>
+      <div class="panel-body">
+        <canvas id="milestoneChart" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Budget Utilisation -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Budget Utilisation</div>
+        <div class="panel-badge">€799,999</div>
+      </div>
+      <div class="panel-body">
+        <canvas id="budgetChart" height="180"></canvas>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">Pre-financing (70%) disbursed. 2nd installment: M15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming deadlines -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Upcoming Deadlines (Next 60 Days)</div>
+      <div class="panel-badge">Auto-Refreshed</div>
+    </div>
+    <div class="panel-body">
+      <table class="ms-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Item</th>
+            <th>WP</th>
+            <th>Lead</th>
+            <th>Due Month</th>
+            <th>Days Left</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="upcoming-tbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MILESTONES ═══════════ -->
+<div id="section-milestones" class="section">
+  <div class="section-title">Project Milestones (MS1 – MS17)</div>
+
+  <div class="filter-row" id="ms-filter-row">
+    <button class="filter-btn active" onclick="filterMS('all', this)">All (17)</button>
+    <button class="filter-btn" onclick="filterMS('complete', this)">Complete</button>
+    <button class="filter-btn" onclick="filterMS('progress', this)">In Progress</button>
+    <button class="filter-btn" onclick="filterMS('pending', this)">Pending</button>
+    <button class="filter-btn" onclick="filterMS('wp1', this)">WP1</button>
+    <button class="filter-btn" onclick="filterMS('wp2', this)">WP2</button>
+    <button class="filter-btn" onclick="filterMS('wp3', this)">WP3</button>
+    <button class="filter-btn" onclick="filterMS('wp4', this)">WP4</button>
+    <button class="filter-btn" onclick="filterMS('wp5', this)">WP5</button>
+  </div>
+
+  <div class="panel">
+    <table class="ms-table" id="ms-table">
+      <thead>
+        <tr>
+          <th>MS No.</th>
+          <th>Milestone Name</th>
+          <th>WP</th>
+          <th>Lead</th>
+          <th>Due Month</th>
+          <th>Means of Verification</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="ms-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════ DELIVERABLES ═══════════ -->
+<div id="section-deliverables" class="section">
+  <div class="section-title">Project Deliverables (D1.1 – D5.2)</div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterD('all', this)">All</button>
+    <button class="filter-btn" onclick="filterD('complete', this)">Complete</button>
+    <button class="filter-btn" onclick="filterD('progress', this)">In Progress</button>
+    <button class="filter-btn" onclick="filterD('pending', this)">Pending</button>
+    <button class="filter-btn" onclick="filterD('wp1', this)">WP1</button>
+    <button class="filter-btn" onclick="filterD('wp2', this)">WP2</button>
+    <button class="filter-btn" onclick="filterD('wp3', this)">WP3</button>
+    <button class="filter-btn" onclick="filterD('wp4', this)">WP4</button>
+    <button class="filter-btn" onclick="filterD('wp5', this)">WP5</button>
+  </div>
+
+  <div class="panel">
+    <table class="ms-table" id="d-table">
+      <thead>
+        <tr>
+          <th>Del. No.</th>
+          <th>Deliverable Name</th>
+          <th>WP</th>
+          <th>Lead</th>
+          <th>Type</th>
+          <th>Level</th>
+          <th>Due Month</th>
+          <th>Internal Deadline</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="d-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════ GANTT ═══════════ -->
+<div id="section-gantt" class="section">
+  <div class="section-title">Project Gantt Chart — 36 Month Timeline</div>
+  <div class="panel">
+    <div class="panel-body" style="padding: 8px;">
+      <div class="gantt-wrap">
+        <div class="gantt" id="gantt-chart"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--muted);">■ <span style="color:var(--wp1)">WP1</span> &nbsp; ■ <span style="color:var(--wp2)">WP2</span> &nbsp; ■ <span style="color:var(--wp3)">WP3</span> &nbsp; ■ <span style="color:var(--wp4)">WP4</span> &nbsp; ■ <span style="color:var(--wp5)">WP5</span></span>
+        <span style="font-size:11px;color:rgba(255,204,0,0.7);">│ Current Month</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PARTNERS ═══════════ -->
+<div id="section-partners" class="section">
+  <div class="section-title">Partner Institutions & Budget Allocation</div>
+
+  <div class="partner-grid" style="margin-bottom:20px;">
+    <div class="partner-card">
+      <div class="partner-name">University of Engineering & Technology Lahore</div>
+      <div class="partner-type">🇵🇰 Pakistan · Coordinator (COO)</div>
+      <div class="partner-budget">€137,496</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp1">WP1 Lead</span>
+        <span class="wp-tag wp4">WP4 Lead</span>
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp3">WP3</span>
+        <span class="wp-tag wp5">WP5</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">Dublin City University</div>
+      <div class="partner-type">🇮🇪 Ireland · European Partner</div>
+      <div class="partner-budget">€140,400</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp2">WP2 Lead</span>
+        <span class="wp-tag wp1">WP1</span>
+        <span class="wp-tag wp3">WP3</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">National Technical University of Athens</div>
+      <div class="partner-type">🇬🇷 Greece · European Partner</div>
+      <div class="partner-budget">€32,972</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp3">WP3</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">PAF — Karachi Institute of Economics & Technology</div>
+      <div class="partner-type">🇵🇰 Pakistan · PAF-IAST</div>
+      <div class="partner-budget">€92,447</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp3">WP3 Lead</span>
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp4">WP4</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">NED University of Engineering & Technology</div>
+      <div class="partner-type">🇵🇰 Pakistan · QAP Lead (MS3)</div>
+      <div class="partner-budget">€90,447</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp1">WP1</span>
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp4">WP4</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">Lahore College for Women University</div>
+      <div class="partner-type">🇵🇰 Pakistan · WP5 Lead</div>
+      <div class="partner-budget">€80,217</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp5">WP5 Lead</span>
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp3">WP3</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">Balochistan University of IT, Eng & Management Sciences</div>
+      <div class="partner-type">🇵🇰 Pakistan · BUITEMS</div>
+      <div class="partner-budget">€90,447</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp3">WP3</span>
+        <span class="wp-tag wp4">WP4</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">Karakoram International University</div>
+      <div class="partner-type">🇵🇰 Pakistan · KIU</div>
+      <div class="partner-budget">€81,230</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp2">WP2</span>
+        <span class="wp-tag wp3">WP3</span>
+        <span class="wp-tag wp4">WP4</span>
+      </div>
+    </div>
+    <div class="partner-card">
+      <div class="partner-name">Pakistan Engineering Council</div>
+      <div class="partner-type">🇵🇰 Pakistan · Associated Partner</div>
+      <div class="partner-budget">€15,266</div>
+      <div class="partner-budget-label">Allocated Grant</div>
+      <div class="partner-wps">
+        <span class="wp-tag wp3">WP3</span>
+        <span class="wp-tag wp5">WP5</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Budget by Partner</div></div>
+      <div class="panel-body">
+        <canvas id="partnerBudgetChart" height="250"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Budget by Work Package</div></div>
+      <div class="panel-body">
+        <canvas id="wpBudgetChart" height="250"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ ALERTS ═══════════ -->
+<div id="section-alerts" class="section">
+  <div class="section-title">Alerts, Notifications & Action Log</div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Active Alerts</div>
+        <div class="panel-badge" id="alert-count">5 Alerts</div>
+      </div>
+      <div class="panel-body" id="alerts-panel"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Email Notification Log</div>
+      </div>
+      <div class="panel-body" id="email-log">
+        <div style="color:var(--muted);font-size:12px;font-style:italic;">No emails sent yet. Use the "Send Alert" button to notify partners.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px;">
+    <div class="panel-header">
+      <div class="panel-title">Resolution Action Tracker (KOM Decisions)</div>
+      <div class="panel-badge">From KOM Minutes</div>
+    </div>
+    <div class="panel-body">
+      <table class="ms-table">
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Action Required</th>
+            <th>Responsible</th>
+            <th>Deadline</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>KOM-1</td><td>Finalize Consortium Agreement & Governance Documents</td><td>UETL (Dr. Ali Raza)</td><td>M3</td><td><span class="badge complete"><span class="badge-dot"></span>Complete</span></td></tr>
+          <tr><td>KOM-3</td><td>Develop Bootcamp Design Coordination Group (BDCG)</td><td>DCU</td><td>M2</td><td><span class="badge complete"><span class="badge-dot"></span>Complete</span></td></tr>
+          <tr><td>KOM-5</td><td>Finalize Master Bootcamp Structure & Delivery Mode</td><td>DCU</td><td>M4</td><td><span class="badge progress"><span class="badge-dot"></span>In Progress</span></td></tr>
+          <tr><td>KOM-6</td><td>Distribute standardized attendance sheets (EC/BRIDGE logo)</td><td>UETL</td><td>M2</td><td><span class="badge complete"><span class="badge-dot"></span>Complete</span></td></tr>
+          <tr><td>KOM-7</td><td>Schedule Faculty Training at NTUA (Y1) and DCU (Y2)</td><td>NTUA / DCU</td><td>M10 / M22</td><td><span class="badge pending"><span class="badge-dot"></span>Pending</span></td></tr>
+          <tr><td>KOM-8</td><td>Disburse 1st installment (50% pre-financing) to all partners</td><td>UETL Finance</td><td>M1</td><td><span class="badge complete"><span class="badge-dot"></span>Pending</span></td></tr>
+          <tr><td>KOM-9</td><td>Share equipment tentative specifications with WP4 team</td><td>UETL</td><td>Jan 2026</td><td><span class="badge warning"><span class="badge-dot"></span>Complete</span></td></tr>
+          <tr><td>KOM-10</td><td>Rework project organogram showing all HEI roles</td><td>UETL</td><td>M2</td><td><span class="badge progress"><span class="badge-dot"></span>In Progress</span></td></tr>
+          <tr><td>KOM-11</td><td>Nominate focal persons for WP4 & WP5 from each HEI</td><td>All HEIs</td><td>M2</td><td><span class="badge progress"><span class="badge-dot"></span>In Progress</span></td></tr>
+          <tr><td>KOM-12</td><td>WP Leads submit deliverables 1 month before EC deadline</td><td>All WP Leads</td><td>Ongoing</td><td><span class="badge pending"><span class="badge-dot"></span>Ongoing</span></td></tr>
+          <tr><td>KOM-22</td><td>Prepare Gantt Charts & budget spend plans (per WP)</td><td>All WP Leads</td><td>M2</td><td><span class="badge warning"><span class="badge-dot"></span>Due Soon</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  BRIDGE Project · Erasmus+ CBHE · Grant Agreement 101237977 · Dashboard auto-refreshes daily · Data accurate as of <span id="footer-date"></span>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="email-modal" id="emailModal">
+  <div class="email-box">
+    <h3>✉ Send Alert Email</h3>
+    <div class="email-field">
+      <label>To (Partner / All Partners)</label>
+      <select id="email-to">
+        <option>All Partners</option>
+        <option>UETL — Coordinator</option>
+        <option>DCU — WP2 Lead</option>
+        <option>PAF-IAST — WP3 Lead</option>
+        <option>LCWU — WP5 Lead</option>
+        <option>NED University</option>
+        <option>BUITEMS</option>
+        <option>KIU</option>
+        <option>NTUA</option>
+        <option>Pakistan Engineering Council</option>
+      </select>
+    </div>
+    <div class="email-field">
+      <label>Alert Type</label>
+      <select id="email-type" onchange="prefillEmail()">
+        <option value="">-- Select --</option>
+        <option value="deadline">Upcoming Deadline</option>
+        <option value="overdue">Overdue Deliverable</option>
+        <option value="milestone">Milestone Reached</option>
+        <option value="report">Progress Report Due</option>
+        <option value="meeting">Meeting Reminder</option>
+      </select>
+    </div>
+    <div class="email-field">
+      <label>Subject</label>
+      <input type="text" id="email-subject" placeholder="BRIDGE Project — Alert Notification" />
+    </div>
+    <div class="email-field">
+      <label>Message</label>
+      <textarea id="email-body" placeholder="Enter notification message..."></textarea>
+    </div>
+    <div class="email-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('emailModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="sendEmail()">Send Notification</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PROJECT DATA ──────────────────────────────────────────────────
+
+const PROJECT_START = new Date('2025-12-01');
+const PROJECT_END   = new Date('2028-11-30');
+
+function currentMonth() {
+  const now = new Date();
+  const diff = (now.getFullYear() - PROJECT_START.getFullYear()) * 12 +
+               (now.getMonth() - PROJECT_START.getMonth()) + 1;
+  return Math.max(1, Math.min(36, diff));
+}
+
+const CUR_MONTH = currentMonth();
+
+// Milestones from grant proposal
+const MILESTONES = [
+  { id:'MS1',  wp:1, name:'Kick-off Meeting & EC Establishment',          lead:'UETL',     due:1,  status:'complete', verify:'Minutes of KOM; First EC Meeting' },
+  { id:'MS2',  wp:1, name:'Consortium Agreement Finalised & Signed',      lead:'UETL',     due:3,  status:'progress', verify:'Signed Consortium Agreement document.' },
+  { id:'MS3',  wp:1, name:'Quality Assurance Plan (QAP) Developed & QEC Collaboration Initiated',       lead:'NED',      due:4,  status:'pending', verify:'Approved QAP document; QEC confirmation.' },
+  { id:'MS4',  wp:2, name:'Inception of Bootcamp Design & Coordination Group',             lead:'DCU',     due:2,  status:'complete', verify:'BDCG meeting minutes; progress report.' },
+  { id:'MS5',  wp:2, name:'Completetion of Bootcamp Content & Resources Development',          lead:'DCU',      due:12,  status:'progress', verify:'Needs assessment report; industry consultations.' },
+  { id:'MS6',  wp:2, name:'Master Bootcamp Execution',        lead:'NED',      due:18, status:'pending',  verify:'Successful execution of all 7 master bootcamps.' },
+  { id:'MS7',  wp:2, name:'Localised Bootcamp Execution & CPD Workshop Certification',           lead:'NED',     due:36, status:'pending',  verify:'Training report; signed attendance sheets.' },
+  { id:'MS8',  wp:3, name:'New Modules developed & integrated into Engg. Curricula',          lead:'PAF-IAST',      due:20, status:'pending',  verify:'Bootcamp reports; participant lists.' },
+  { id:'MS9',  wp:3, name:'Accreditation of updated courses',            lead:'PAF-IAST',      due:22, status:'pending',  verify:'Training completion certificates; attendance.' },
+  { id:'MS10', we:3, name:'Full Implementation across HEIs',            lead:'KIU', due:24,  status:'pending',  verify:'Gap analysis report signed by all HEI leads.' },
+  { id:'MS11', wp:4, name:'BRIDGE CoE Establishment & Operational Readiness',         lead:'UETL', due:15, status:'Early stage',  verify:'HEI board approvals; curriculum documents.' },
+  { id:'MS12', wp:4, name:'Establishment of the Joint Alumni Network',       lead:'BUITEMS', due:8, status:'pending',  verify:'PEC submission receipt; approval records.' },
+  { id:'MS13', wp:4, name:'Trainings, workshops, Hackathon and other competitions completed',           lead:'BUITEMS',     due:36, status:'pending',  verify:'Lab commissioning report; equipment inventory.' },
+  { id:'MS14', wp:5, name:'Deissemination, Communication & Exploitation Plan Finalised along with copyright policy',       lead:'LCWU',     due:6, status:'pending',  verify:'Per-HEI commissioning reports.' },
+  { id:'MS15', wp:5, name:'Digital Media Platforms Launched & Active',    lead:'LCWU',     due:6,  status:'progress', verify:'Website URL; social media analytics report.' },
+  { id:'MS16', wp:5, name:'Women Leadership in Digital Transformation (WLDT) Initiative', lead:'LCWU', due:9, status:'pending', verify:'WLDT report; event records; workshop docs.' },
+  { id:'MS17', wp:5, name:'Seminars & Webinars Organised',                lead:'LCWU',     due:24, status:'pending',  verify:'Event reports; attendance records; feedback.' },
+];
+
+// Deliverables from grant proposal
+const DELIVERABLES = [
+  { id:'D1.1', wp:1, name:'Project Management Plan',                lead:'UETL',     type:'Report',    level:'Sensitive', due:5,  internalDue:4,  status:'progress' },
+  { id:'D1.2', wp:1, name:'Quality Assurance Plan (QAP) Document',                           lead:'NED',      type:'Report',    level:'Sensitive', due:5,  internalDue:4,  status:'pending' },
+  { id:'D1.3', wp:1, name:'Final Project Progress',                                   lead:'UETL',     type:'Report',    level:'Sensitive', due:36, internalDue:34, status:'pending'  },
+  { id:'D2.1', wp:2, name:'Establishment of Bootcamp Design & coordination Group & Indicative contents',           lead:'DCU',      type:'Report',    level:'Public',    due:6,  internalDue:5,  status:'progress' },
+  { id:'D2.2', wp:2, name:'Bootcamp Resources & Report on Master Bootcamp Execution',              lead:'DCU',      type:'Other',     level:'Public',    due:18, internalDue:17, status:'pending'  },
+  { id:'D2.3', wp:2, name:'Localised Bootcamps & CPD Worshops',                  lead:'NED',      type:'Report',    level:'Public',    due:36, internalDue:34, status:'pending'  },
+  { id:'D2.4', wp:2, name:'Master Bootcamp Execution Reports (x7)',                 lead:'DCU',      type:'Report',    level:'Sensitive', due:24, internalDue:23, status:'pending'  },
+  { id:'D3.1', wp:3, name:'New Designed Modules with CLO/PLO Mapping',             lead:'PAF-IAST', type:'Report',    level:'Public',    due:24,  internalDue:22,  status:'pending'  },
+  { id:'D3.2', wp:3, name:'Execution of New Modules with Feedback',            lead:'KIU', type:'Other',     level:'Public',    due:36, internalDue:32, status:'pending'  },
+  { id:'D4.1', wp:4, name:'Operational CoE Facilities at UETL & Partner HEIs',        lead:'UETL',     type:'Report',    level:'Sensitive', due:15, internalDue:14, status:'progress'  },
+  { id:'D4.2', wp:4, name:'Trainings, Competitions & Seminars',              lead:'BUITEMS',     type:'Report',    level:'Public',    due:36, internalDue:32, status:'pending'  },
+  { id:'D5.1', wp:5, name:'Dissemination, Communication & Exploitation Plan & Copyright Policy',       lead:'LCWU',     type:'Report',    level:'Sensitive', due:8,  internalDue:7,  status:'progress'  },
+  { id:'D5.2', wp:5, name:'Project Impact & Outreach Report',                       lead:'LCWU',     type:'Report',    level:'Sensitive', due:36, internalDue:32, status:'pending'  },
+];
+
+const WP_COLORS = { 1: '#4a90d9', 2: '#9b59b6', 3: '#27ae60', 4: '#e67e22', 5: '#e91e8c' };
+const STATUS_MAP = {
+  complete: { label:'Complete',    cls:'complete' },
+  progress: { label:'In Progress', cls:'progress' },
+  pending:  { label:'Pending',     cls:'pending'  },
+  overdue:  { label:'Overdue',     cls:'overdue'  },
+  warning:  { label:'Due Soon',    cls:'warning'  },
+};
+
+// ─── INIT ──────────────────────────────────────────────────────────
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateHeader();
+  renderMilestones('all');
+  renderDeliverables('all');
+  renderUpcoming();
+  renderAlerts();
+  renderGantt();
+  initCharts();
+});
+
+function updateHeader() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  document.getElementById('current-date').textContent = dateStr;
+  document.getElementById('footer-date').textContent = dateStr;
+  document.getElementById('elapsed-months').textContent = CUR_MONTH;
+  document.getElementById('timeline-badge').textContent = `Month ${CUR_MONTH} / 36`;
+}
+
+// ─── TAB SWITCHING ─────────────────────────────────────────────────
+
+function switchTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ─── MILESTONES ────────────────────────────────────────────────────
+
+let msFilter = 'all';
+
+function filterMS(f, btn) {
+  msFilter = f;
+  document.querySelectorAll('#ms-filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMilestones(f);
+}
+
+function getStatusWithDue(item) {
+  if (item.status === 'complete') return 'complete';
+  if (item.due < CUR_MONTH && item.status !== 'complete') return 'overdue';
+  if (item.due - CUR_MONTH <= 2 && item.status === 'pending') return 'warning';
+  return item.status;
+}
+
+function renderMilestones(filter) {
+  const tbody = document.getElementById('ms-tbody');
+  let rows = MILESTONES.map(ms => ({ ...ms, computedStatus: getStatusWithDue(ms) }));
+  if (filter !== 'all') {
+    if (['wp1','wp2','wp3','wp4','wp5'].includes(filter)) {
+      rows = rows.filter(r => r.wp === parseInt(filter.replace('wp','')));
+    } else {
+      rows = rows.filter(r => r.computedStatus === filter);
+    }
+  }
+  tbody.innerHTML = rows.map(ms => {
+    const s = STATUS_MAP[ms.computedStatus] || STATUS_MAP.pending;
+    return `<tr data-wp="wp${ms.wp}" data-status="${ms.computedStatus}">
+      <td style="font-weight:600;color:var(--eu-gold)">${ms.id}</td>
+      <td>${ms.name}</td>
+      <td><span class="wp-tag wp${ms.wp}">WP${ms.wp}</span></td>
+      <td>${ms.lead}</td>
+      <td><span class="month-badge">M${ms.due}</span></td>
+      <td style="font-size:11px;color:var(--muted);max-width:200px">${ms.verify}</td>
+      <td><span class="badge ${s.cls}"><span class="badge-dot"></span>${s.label}</span></td>
+      <td><button class="btn btn-ghost" style="padding:3px 8px;font-size:10px;" onclick="alertForItem('${ms.id}','${ms.name}')">📧 Alert</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── DELIVERABLES ──────────────────────────────────────────────────
+
+function filterD(f, btn) {
+  document.querySelectorAll('#d-table .filter-btn, .filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDeliverables(f);
+}
+
+function renderDeliverables(filter) {
+  const tbody = document.getElementById('d-tbody');
+  let rows = DELIVERABLES.map(d => ({ ...d, computedStatus: getStatusWithDue(d) }));
+  if (filter !== 'all') {
+    if (['wp1','wp2','wp3','wp4','wp5'].includes(filter)) {
+      rows = rows.filter(r => r.wp === parseInt(filter.replace('wp','')));
+    } else {
+      rows = rows.filter(r => r.computedStatus === filter);
+    }
+  }
+  tbody.innerHTML = rows.map(d => {
+    const s = STATUS_MAP[d.computedStatus] || STATUS_MAP.pending;
+    const levelBadge = d.level === 'Public' ? 
+      `<span style="color:var(--green);font-size:10px;">🌐 Public</span>` :
+      `<span style="color:var(--amber);font-size:10px;">🔒 Sensitive</span>`;
+    return `<tr class="deliverable-row">
+      <td>${d.id}</td>
+      <td>${d.name}</td>
+      <td><span class="wp-tag wp${d.wp}">WP${d.wp}</span></td>
+      <td>${d.lead}</td>
+      <td style="font-size:11px;color:var(--muted)">${d.type}</td>
+      <td>${levelBadge}</td>
+      <td><span class="month-badge">M${d.due}</span></td>
+      <td><span class="month-badge" style="background:rgba(231,76,60,0.1);border-color:rgba(231,76,60,0.3);color:#e74c3c">M${d.internalDue}</span></td>
+      <td><span class="badge ${s.cls}"><span class="badge-dot"></span>${s.label}</span></td>
+      <td><button class="btn btn-ghost" style="padding:3px 8px;font-size:10px;" onclick="alertForItem('${d.id}','${d.name}')">📧 Alert</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── UPCOMING ──────────────────────────────────────────────────────
+
+function renderUpcoming() {
+  const tbody = document.getElementById('upcoming-tbody');
+  const all = [
+    ...MILESTONES.map(m => ({ ...m, itemType:'Milestone' })),
+    ...DELIVERABLES.map(d => ({ ...d, itemType:'Deliverable' }))
+  ].filter(i => {
+    const dueMonth = i.due;
+    const diff = dueMonth - CUR_MONTH;
+    return diff >= 0 && diff <= 3;
+  }).sort((a, b) => a.due - b.due);
+
+  tbody.innerHTML = all.slice(0, 10).map(item => {
+    const daysLeft = (item.due - CUR_MONTH) * 30;
+    const st = getStatusWithDue(item);
+    const s = STATUS_MAP[st] || STATUS_MAP.pending;
+    const daysLabel = daysLeft <= 0 ? `<span style="color:var(--red)">Imminent</span>` : 
+                      daysLeft <= 30 ? `<span style="color:var(--amber)">~${daysLeft}d</span>` : 
+                      `~${daysLeft}d`;
+    return `<tr>
+      <td style="font-weight:600;color:var(--eu-gold)">${item.id}</td>
+      <td>${item.name} <span style="font-size:10px;color:var(--muted)">(${item.itemType})</span></td>
+      <td><span class="wp-tag wp${item.wp}">WP${item.wp}</span></td>
+      <td>${item.lead}</td>
+      <td><span class="month-badge">M${item.due}</span></td>
+      <td>${daysLabel}</td>
+      <td><span class="badge ${s.cls}"><span class="badge-dot"></span>${s.label}</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No items due in the next 60 days</td></tr>';
+}
+
+// ─── ALERTS ────────────────────────────────────────────────────────
+
+function renderAlerts() {
+  const panel = document.getElementById('alerts-panel');
+  const overdueItems = [...MILESTONES, ...DELIVERABLES].filter(i => getStatusWithDue(i) === 'overdue');
+  const warningItems = [...MILESTONES, ...DELIVERABLES].filter(i => getStatusWithDue(i) === 'warning');
+
+  let html = '';
+  if (overdueItems.length > 0) {
+    html += `<div class="alert-item danger">
+      <div class="alert-icon">🔴</div>
+      <div>
+        <div class="alert-title">Overdue Items (${overdueItems.length})</div>
+        <div class="alert-desc">${overdueItems.map(i => i.id + ': ' + i.name).join(' · ')}</div>
+      </div>
+    </div>`;
+  }
+  if (warningItems.length > 0) {
+    html += `<div class="alert-item warning">
+      <div class="alert-icon">⚠️</div>
+      <div>
+        <div class="alert-title">Due Within 2 Months (${warningItems.length})</div>
+        <div class="alert-desc">${warningItems.map(i => i.id + ' (M' + i.due + ')').join(' · ')}</div>
+      </div>
+    </div>`;
+  }
+  html += `<div class="alert-item info">
+    <div class="alert-icon">📅</div>
+    <div>
+      <div class="alert-title">2nd Pre-financing Installment Due</div>
+      <div class="alert-desc">UETL to disburse 20% pre-financing to all partners at M15. Prepare financial documentation.</div>
+    </div>
+  </div>
+  <div class="alert-item info">
+    <div class="alert-icon">🔧</div>
+    <div>
+      <div class="alert-title">Equipment Specifications Pending</div>
+      <div class="alert-desc">KOM-9: UETL to share equipment specs with WP4 team before end of January 2026.</div>
+    </div>
+  </div>
+  <div class="alert-item success">
+    <div class="alert-icon">✅</div>
+    <div>
+      <div class="alert-title">Kick-off Meeting Successfully Completed</div>
+      <div class="alert-desc">MS1 complete — EC established, PM appointed, KOM minutes approved and distributed.</div>
+    </div>
+  </div>`;
+
+  panel.innerHTML = html;
+  document.getElementById('alert-count').textContent = `${overdueItems.length + warningItems.length + 3} Alerts`;
+}
+
+// ─── GANTT ─────────────────────────────────────────────────────────
+
+function renderGantt() {
+  const gantt = document.getElementById('gantt-chart');
+  const months = Array.from({length:36}, (_,i) => i+1);
+  
+  const ganttItems = [
+    { label:'WP1: Management & QA', start:1, end:36, wp:1 },
+    { label:'  MS1: KOM & EC Establishment', start:1, end:1, wp:1 },
+    { label:'  MS2: Consortium Agreement Signed', start:1, end:3, wp:1 },
+    { label:'  D1.1: Project Mgmt Plan', start:1, end:2, wp:1 },
+    { label:'  D1.3: Final Progress Report', start:10, end:12, wp:1 },
+    { label:'WP2: Bootcamps', start:1, end:30, wp:2 },
+    { label:'  D2.1: Needs Assessment', start:1, end:4, wp:2 },
+    { label:'  D2.2: 7 Bootcamp Curricula', start:4, end:12, wp:2 },
+    { label:'  E2.3: Faculty Training NTUA', start:10, end:12, wp:2 },
+    { label:'  Master Bootcamps Phase 1', start:12, end:18, wp:2 },
+    { label:'  E2.2: Faculty Training DCU', start:20, end:24, wp:2 },
+    { label:'WP3: Curriculum Updates', start:6, end:30, wp:3 },
+    { label:'  D3.1: Gap Analysis', start:6, end:8, wp:3 },
+    { label:'  D3.2: Curricula Phase 1', start:12, end:20, wp:3 },
+    { label:'  D3.3: Curricula Phase 2', start:22, end:30, wp:3 },
+    { label:'WP4: CoE / Labs', start:6, end:36, wp:4 },
+    { label:'  D4.1: Equipment Procurement', start:6, end:15, wp:4 },
+    { label:'  MS13: CoE Hub Operational', start:14, end:18, wp:4 },
+    { label:'  MS14: Satellite Labs Active', start:20, end:24, wp:4 },
+    { label:'WP5: Dissemination', start:1, end:36, wp:5 },
+    { label:'  MS15: Digital Platforms', start:3, end:6, wp:5 },
+    { label:'  MS16: WLDT Initiative', start:6, end:9, wp:5 },
+    { label:'  D5.1: Dissem. Plan', start:5, end:8, wp:5 },
+    { label:'  Conferences & Webinars', start:12, end:36, wp:5 },
+  ];
+
+  // Header
+  let headerHTML = `<div class="gantt-header">
+    <div class="gantt-label-col">Activity</div>
+    ${months.map(m => `<div class="gantt-month">${m % 6 === 0 || m === 1 ? 'M'+m : ''}</div>`).join('')}
+  </div>`;
+
+  // Today line position
+  const todayLeft = ((CUR_MONTH - 1) / 36) * 100;
+
+  // Rows
+  let rowsHTML = ganttItems.map(item => {
+    const cells = months.map(m => {
+      if (m >= item.start && m <= item.end) {
+        const isStart = m === item.start;
+        const isEnd = m === item.end;
+        const borderRadius = isStart && isEnd ? '3px' : isStart ? '3px 0 0 3px' : isEnd ? '0 3px 3px 0' : '0';
+        return `<div class="gantt-cell"><div class="gantt-bar" style="left:0;right:0;background:${WP_COLORS[item.wp]};border-radius:${borderRadius};opacity:${item.label.startsWith(' ') ? 0.7 : 0.9}"></div></div>`;
+      }
+      return `<div class="gantt-cell"></div>`;
+    }).join('');
+    return `<div class="gantt-row">
+      <div class="gantt-row-label" style="color:${item.label.startsWith(' ') ? 'var(--muted)' : 'var(--text)'}; font-size:${item.label.startsWith(' ') ? '10px' : '11px'};">${item.label.trim()}</div>
+      ${cells}
+    </div>`;
+  }).join('');
+
+  gantt.innerHTML = headerHTML + rowsHTML;
+
+  // Inject today line into each row
+  gantt.querySelectorAll('.gantt-row').forEach(row => {
+    const line = document.createElement('div');
+    line.className = 'gantt-today-line';
+    line.style.left = `calc(220px + ${((CUR_MONTH - 0.5) / 36) * (row.offsetWidth - 220)}px)`;
+    row.style.position = 'relative';
+    row.appendChild(line);
+  });
+}
+
+// ─── CHARTS ────────────────────────────────────────────────────────
+
+let charts = {};
+
+function initCharts() {
+  const defaults = { color: '#7a90b0', borderColor: 'rgba(255,255,255,0.1)' };
+  Chart.defaults.color = defaults.color;
+
+  // Deliverable Status Donut
+  charts.delivStatus = new Chart(document.getElementById('delivStatusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Complete', 'In Progress', 'Pending', 'Due Soon'],
+      datasets: [{
+        data: [2, 3, 10, 2],
+        backgroundColor: ['#2ecc71','#3498db','#2d3f5e','#f39c12'],
+        borderWidth: 2,
+        borderColor: '#0d1e3a'
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      cutout: '72%',
+    }
+  });
+
+  // Timeline / Burndown
+  const timelineLabels = Array.from({length:36}, (_,i) => `M${i+1}`);
+  const planned = timelineLabels.map((_,i) => Math.round(((i+1)/36)*100));
+  const actual  = timelineLabels.map((_,i) => i < CUR_MONTH ? Math.round(((i+1)/36)*100 * (i < 3 ? 1.0 : 0.92)) : null);
+
+  charts.timeline = new Chart(document.getElementById('timelineChart'), {
+    type: 'line',
+    data: {
+      labels: timelineLabels,
+      datasets: [
+        { label:'Planned', data: planned, borderColor:'rgba(255,204,0,0.5)', borderDash:[4,4], fill:false, pointRadius:0 },
+        { label:'Actual',  data: actual,  borderColor:'#3498db', fill:true, backgroundColor:'rgba(52,152,219,0.1)', pointRadius:0, tension:0.3 }
+      ]
+    },
+    options: {
+      plugins: { legend: { position:'bottom', labels:{ boxWidth:10, font:{size:10} } } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 12, font:{size:9} }, grid:{ color:'rgba(255,255,255,0.04)' } },
+        y: { ticks: { callback: v => v+'%', font:{size:9} }, grid:{ color:'rgba(255,255,255,0.04)' }, max:100 }
+      }
+    }
+  });
+
+  // Milestone by WP
+  charts.milestone = new Chart(document.getElementById('milestoneChart'), {
+    type: 'bar',
+    data: {
+      labels: ['WP1','WP2','WP3','WP4','WP5'],
+      datasets: [
+        { label:'Complete', data:[2,0,0,0,0], backgroundColor:'#2ecc71' },
+        { label:'Progress',  data:[2,1,0,0,1], backgroundColor:'#3498db' },
+        { label:'Pending',   data:[0,4,2,2,2], backgroundColor:'#2d3f5e' },
+      ]
+    },
+    options: {
+      plugins: { legend: { position:'bottom', labels:{ boxWidth:10, font:{size:10} } } },
+      scales: {
+        x: { stacked:true, ticks:{font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y: { stacked:true, ticks:{font:{size:10}, stepSize:1}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+
+  // Budget utilisation
+  charts.budget = new Chart(document.getElementById('budgetChart'), {
+    type: 'bar',
+    data: {
+      labels: ['WP1','WP2','WP3','WP4','WP5'],
+      datasets: [
+        { label:'Allocated (€k)', data:[140,220,180,160,100], backgroundColor: Object.values(WP_COLORS).map(c => c + 'aa') },
+        { label:'Spent (€k)',     data:[0,0,0,0,0], backgroundColor: Object.values(WP_COLORS) }
+      ]
+    },
+    options: {
+      plugins: { legend: { position:'bottom', labels:{ boxWidth:10, font:{size:10} } } },
+      scales: {
+        x: { ticks:{font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y: { ticks:{font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+
+  // Partner Budget
+  charts.partnerBudget = new Chart(document.getElementById('partnerBudgetChart'), {
+    type: 'bar',
+    data: {
+      labels: ['UETL','DCU','NTUA','PAF-IAST','NED','LCWU','BUITEMS','KIU','PEC'],
+      datasets: [{
+        label: 'Grant (€k)',
+        data: [137.5, 140.4, 33.0, 92.4, 90.4, 80.2, 90.4, 81.2, 15.3],
+        backgroundColor: ['#4a90d9','#1abc9c','#27ae60','#e67e22','#9b59b6','#e91e8c','#3498db','#e74c3c','#95a5a6'],
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks:{font:{size:9}, callback: v => '€'+v+'k'}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y: { ticks:{font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
+    }
+  });
+
+  // WP Budget Donut
+  charts.wpBudget = new Chart(document.getElementById('wpBudgetChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['WP1 Mgmt','WP2 Bootcamps','WP3 Curricula','WP4 CoE','WP5 Dissem.'],
+      datasets: [{
+        data: [140, 220, 180, 160, 100],
+        backgroundColor: Object.values(WP_COLORS),
+        borderWidth: 3,
+        borderColor: '#0d1e3a'
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { position:'bottom', labels:{ boxWidth:12, font:{size:10}, padding:8 } }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+// ─── EMAIL ─────────────────────────────────────────────────────────
+
+function prefillEmail() {
+  const type = document.getElementById('email-type').value;
+  const subjects = {
+    deadline: 'BRIDGE Project — Upcoming Deadline Reminder',
+    overdue:  'BRIDGE Project — Overdue Deliverable Notification',
+    milestone:'BRIDGE Project — Milestone Achievement Notification',
+    report:   'BRIDGE Project — Progress Report Due',
+    meeting:  'BRIDGE Project — EC Meeting Reminder',
+  };
+  const bodies = {
+    deadline: `Dear Partner,\n\nThis is an automated reminder from the BRIDGE Project Monitoring System.\n\nAn upcoming deadline requires your attention. Please ensure the relevant deliverable or milestone is progressing on schedule.\n\nProject: BRIDGE (Erasmus+ CBHE, Grant 101237977)\nCurrent Month: M${CUR_MONTH} of M36\n\nPlease update the project dashboard with your progress status and confirm readiness.\n\nBest regards,\nBRIDGE Project Management Team\nUETL — Project Coordinator`,
+    overdue:  `Dear Partner,\n\nOur monitoring system has flagged an overdue item in your work package.\n\nImmediate action is required. Please provide a status update within 5 working days and submit a revised timeline if needed.\n\nThis notification is auto-generated by the BRIDGE Dashboard.\n\nBest regards,\nBRIDGE Project Management Team`,
+    milestone:`Dear Partners,\n\nWe are pleased to confirm that a key milestone has been reached in the BRIDGE project.\n\nPlease ensure documentation is complete and uploaded to the project portal.\n\nBest regards,\nBRIDGE Project Management Team`,
+    report:   `Dear Partner,\n\nThis is a reminder that a progress report is due soon. All WP leads are requested to submit their contributions one month prior to the official EC deadline (per KOM-12).\n\nBest regards,\nBRIDGE Project Management Team`,
+    meeting:  `Dear Partners,\n\nThis is a reminder for the upcoming Executive Committee (EC) Meeting.\n\nPlease prepare your WP progress updates and any issues or risks for discussion.\n\nBest regards,\nBRIDGE Project Management Team`,
+  };
+  document.getElementById('email-subject').value = subjects[type] || '';
+  document.getElementById('email-body').value = bodies[type] || '';
+}
+
+function alertForItem(id, name) {
+  document.getElementById('email-type').value = 'deadline';
+  prefillEmail();
+  document.getElementById('email-subject').value = `BRIDGE Project — Alert: ${id}`;
+  document.getElementById('email-body').value = `Dear Partner,\n\nThis alert concerns: ${id} — ${name}\n\nPlease review the current status and take necessary action.\n\nBest regards,\nBRIDGE Project Management Team`;
+  document.getElementById('emailModal').classList.add('open');
+}
+
+function sendEmail() {
+  const to      = document.getElementById('email-to').value;
+  const subject = document.getElementById('email-subject').value;
+  const body    = document.getElementById('email-body').value;
+  if (!subject || !body) { alert('Please fill in subject and message.'); return; }
+
+  const log = document.getElementById('email-log');
+  const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  const entry = document.createElement('div');
+  entry.className = 'alert-item success';
+  entry.style.marginBottom = '6px';
+  entry.innerHTML = `<div class="alert-icon">✉</div><div><div class="alert-title" style="color:#2ecc71;">Sent — ${now}</div><div class="alert-desc">To: <b>${to}</b> · Subject: ${subject}</div></div>`;
+
+  if (log.querySelector('div[style*="italic"]')) log.innerHTML = '';
+  log.prepend(entry);
+  document.getElementById('emailModal').classList.remove('open');
+}
+</script>
+</body>
+</html>
