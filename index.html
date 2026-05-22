@@ -1876,7 +1876,7 @@ function renderKPIs() {
     if (!card) return;
     const val = card.querySelector('.kpi-value');
     const pct = wpProgress(wp);
-    val.textContent = pct + '%';
+    val.textContent = card.querySelector('.kpi-trend')?.textContent.replace('▲','').replace('●','').trim() || 'Active';
     val.classList.remove('count-anim'); void val.offsetWidth; val.classList.add('count-anim');
   });
   // Milestones card
