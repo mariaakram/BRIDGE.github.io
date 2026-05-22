@@ -2212,33 +2212,7 @@ function initCharts() {
   const defaults = { color: '#7a90b0', borderColor: 'rgba(255,255,255,0.1)' };
   Chart.defaults.color = defaults.color;
 
-  // Deliverable Status Donut — derived from data
-  const d = getItems(DELIVERABLES).map(x => ({ ...x, cs: getStatusWithDue(x) }));
-  const dComplete = d.filter(x => x.cs === 'complete').length;
-  const dProgress = d.filter(x => x.cs === 'progress').length;
-  const dPending  = d.filter(x => x.cs === 'pending').length;
-  const dWarn     = d.filter(x => x.cs === 'warning' || x.cs === 'overdue').length;
-
-  charts.delivStatus = new Chart(document.getElementById('delivStatusChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Complete', 'In Progress', 'Pending', 'Due Soon / Overdue'],
-      datasets: [{
-        data: [dComplete, dProgress, dPending, dWarn],
-        backgroundColor: ['#2ecc71','#3498db','#2d3f5e','#f39c12'],
-        borderWidth: 3,
-        borderColor: 'rgba(7,15,31,0.9)',
-        hoverOffset: 8
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.label}: ${c.parsed}` } } },
-      cutout: '70%',
-      animation: { animateRotate: true, duration: 900 }
-    }
-  });
-  updateDonut();
-
+  
   // Timeline / Burndown
   const timelineLabels = Array.from({length:36}, (_,i) => `M${i+1}`);
   const planned = timelineLabels.map((_,i) => Math.round(((i+1)/36)*100));
